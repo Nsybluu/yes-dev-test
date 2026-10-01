@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum AdminStatus {
+  INVITED
+  ACTIVE
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Admin {
+  adminId         String      @id @default(cuid())
+  adminName       String
+  email           String      @unique
+  // null until an invited admin sets their own password
+  passwordHash    String?
+  adminRole       AdminRole   @default(ADMIN)
+  status          AdminStatus @default(INVITED)
+  // hash of the invite token, never the token itself
+  inviteTokenHash String?
+  inviteExpiresAt DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Product {
+  // used in the QR URL (/p/<productId>), so it must never change
+  productId   String         @id @default(cuid())
+  // normalized to upper case, format LS-0000 (validated in app code)
+  sku         String         @unique
+  name        String
+  // one of Cleanser, Toner, Serum, Moisturizer, Sunscreen, Mask (validated in app code)
+  category    String?
+  price       Decimal        @db.Decimal(10, 2)
+  size        String?
+  description String?
+  howToUse    String?
+  status      ProductStatus  @default(ACTIVE)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  images      ProductImage[]
+  scans       ScanLog[]
+}
+
+model ProductImage {
+  productImageId String   @id @default(cuid())
+  productId      String
+  product        Product  @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  imageName      String
+  imagePath      String
+  // 0 = main image
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model ScanLog {
+  scanLogId String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  scannedAt DateTime @default(now())
+  userAgent String?
+
+  @@index([productId])
+  @@index([scannedAt])
+}
