@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { updateProduct } from "@/app/admin/products/actions";
 import { ProductForm } from "@/app/admin/products/product-form";
+import { QrCard } from "@/app/admin/products/[productId]/qr-card";
 
 export default async function EditProductPage({ params }: PageProps<"/admin/products/[productId]">) {
   await requireAdmin();
@@ -27,20 +28,23 @@ export default async function EditProductPage({ params }: PageProps<"/admin/prod
           ดูหน้าสาธารณะ
         </Button>
       </div>
-      <ProductForm
-        action={updateProduct.bind(null, product.productId)}
-        submitLabel="บันทึกการแก้ไข"
-        initial={{
-          sku: product.sku,
-          name: product.name,
-          category: product.category ?? "",
-          price: product.price.toString(),
-          size: product.size ?? "",
-          description: product.description ?? "",
-          howToUse: product.howToUse ?? "",
-          status: product.status.toLowerCase(),
-        }}
-      />
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,42rem)_16rem]">
+        <ProductForm
+          action={updateProduct.bind(null, product.productId)}
+          submitLabel="บันทึกการแก้ไข"
+          initial={{
+            sku: product.sku,
+            name: product.name,
+            category: product.category ?? "",
+            price: product.price.toString(),
+            size: product.size ?? "",
+            description: product.description ?? "",
+            howToUse: product.howToUse ?? "",
+            status: product.status.toLowerCase(),
+          }}
+        />
+        <QrCard productId={product.productId} sku={product.sku} />
+      </div>
     </>
   );
 }

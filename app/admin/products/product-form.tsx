@@ -16,7 +16,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { CATEGORIES, type FieldKey } from "@/lib/products/validation";
 import type { ProductFormState } from "@/app/admin/products/actions";
 
-type Action = (state: ProductFormState, formData: FormData) => Promise<ProductFormState>;
+type Action = (
+  state: ProductFormState,
+  formData: FormData,
+) => Promise<ProductFormState>;
 
 export type ProductFormValues = Partial<Record<FieldKey, string>>;
 
@@ -43,10 +46,14 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid gap-2">
+    // content-start: when a neighbour in the same row is taller (it has a hint),
+    // this box is stretched, and without it the label/control rows drift apart
+    <div className="grid content-start gap-2">
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {hint && !error && <p className="text-muted-foreground text-xs">{hint}</p>}
+      {hint && !error && (
+        <p className="text-muted-foreground text-xs">{hint}</p>
+      )}
       {error && (
         <p role="alert" className="text-destructive text-sm">
           {error}
@@ -82,7 +89,13 @@ export function ProductForm({
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Field id="sku" label="SKU *" hint="รูปแบบ LS-0000" error={e.sku}>
-          <Input id="sku" name="sku" defaultValue={v.sku} placeholder="LS-0001" aria-invalid={!!e.sku} />
+          <Input
+            id="sku"
+            name="sku"
+            defaultValue={v.sku}
+            placeholder="LS-0001"
+            aria-invalid={!!e.sku}
+          />
         </Field>
         <Field id="price" label="ราคา (บาท) *" error={e.price}>
           <Input
@@ -97,12 +110,21 @@ export function ProductForm({
       </div>
 
       <Field id="name" label="ชื่อสินค้า *" error={e.name}>
-        <Input id="name" name="name" defaultValue={v.name} aria-invalid={!!e.name} />
+        <Input
+          id="name"
+          name="name"
+          defaultValue={v.name}
+          aria-invalid={!!e.name}
+        />
       </Field>
 
       <div className="grid gap-5 sm:grid-cols-3">
         <Field id="category" label="หมวดหมู่" error={e.category}>
-          <Select name="category" items={categoryItems} defaultValue={v.category || "none"}>
+          <Select
+            name="category"
+            items={categoryItems}
+            defaultValue={v.category || "none"}
+          >
             <SelectTrigger id="category" className="w-full">
               <SelectValue />
             </SelectTrigger>
@@ -118,8 +140,17 @@ export function ProductForm({
         <Field id="size" label="ขนาด" hint="เช่น 30 ml, 50 g" error={e.size}>
           <Input id="size" name="size" defaultValue={v.size} />
         </Field>
-        <Field id="status" label="สถานะ" hint="ปิดใช้งาน = ไม่แสดงหน้าสาธารณะ" error={e.status}>
-          <Select name="status" items={statusItems} defaultValue={v.status?.toLowerCase() || "active"}>
+        <Field
+          id="status"
+          label="สถานะ"
+          hint="ปิดใช้งาน = ไม่แสดงหน้าสาธารณะ"
+          error={e.status}
+        >
+          <Select
+            name="status"
+            items={statusItems}
+            defaultValue={v.status?.toLowerCase() || "active"}
+          >
             <SelectTrigger id="status" className="w-full">
               <SelectValue />
             </SelectTrigger>
@@ -135,10 +166,20 @@ export function ProductForm({
       </div>
 
       <Field id="description" label="รายละเอียด" error={e.description}>
-        <Textarea id="description" name="description" rows={4} defaultValue={v.description} />
+        <Textarea
+          id="description"
+          name="description"
+          rows={4}
+          defaultValue={v.description}
+        />
       </Field>
       <Field id="howToUse" label="วิธีใช้" error={e.howToUse}>
-        <Textarea id="howToUse" name="howToUse" rows={4} defaultValue={v.howToUse} />
+        <Textarea
+          id="howToUse"
+          name="howToUse"
+          rows={4}
+          defaultValue={v.howToUse}
+        />
       </Field>
 
       <div className="flex gap-3">

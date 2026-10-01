@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ระบบจัดการสินค้าและ QR Code
 
-## Getting Started
+เว็บหลังบ้านสำหรับจัดการสินค้า พร้อมหน้าสินค้าสาธารณะที่ผู้ใช้เปิดได้จากการสแกน QR Code
+สร้างด้วย Next.js 16 (App Router) + TypeScript + Tailwind + shadcn/ui + PostgreSQL + Prisma 7
 
-First, run the development server:
+## วิธีรัน (ใช้เวลาประมาณ 3–5 นาที)
+
+**ต้องมีในเครื่อง:** [Node.js](https://nodejs.org) 20.9 ขึ้นไป และ [Docker Desktop](https://www.docker.com/products/docker-desktop) (เปิดโปรแกรมทิ้งไว้ ใช้รัน PostgreSQL)
 
 ```bash
+npm install
+npm run setup
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+จากนั้นเปิด <http://localhost:3000> (จะพาไปหน้า Login)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`npm run setup` ทำให้ทั้งหมดในคำสั่งเดียว: สร้างไฟล์ `.env` (รหัสผ่านสุ่ม), เปิดฐานข้อมูล PostgreSQL ใน Docker, สร้างตาราง และสร้างบัญชี Super Admin คนแรก เมื่อเสร็จจะแสดง **อีเมลและรหัสผ่านสำหรับเข้าสู่ระบบ** บนหน้าจอ (เก็บไว้ใน `.env` ด้วย) รันซ้ำได้ ไม่ทับของเดิม
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> ไม่มีหน้าสมัครสมาชิก ผู้ใช้คนแรกสร้างจาก `setup` เท่านั้น ตามโจทย์ที่ให้ login มีแค่หลังบ้าน
 
-## Learn More
+**ไม่มี Docker?** ติดตั้ง PostgreSQL เอง แล้วคัดลอก `.env.example` เป็น `.env` ใส่ `DATABASE_URL`, `SESSION_SECRET` (สุ่มข้อความยาวๆ) และรหัสผ่านใน `SEED_SUPER_ADMIN_PASSWORD` จากนั้นรัน `npx prisma migrate deploy` และ `npm run db:seed` แทน `npm run setup`
 
-To learn more about Next.js, take a look at the following resources:
+## ลองใช้งานตามลำดับนี้
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **เข้าสู่ระบบ** ด้วยอีเมล/รหัสผ่านที่ `setup` แสดง
+2. **นำเข้า Excel** เมนู "นำเข้า Excel" มีไฟล์ตัวอย่างในโฟลเดอร์ [`sample-data/`](sample-data):
+   - `products-valid.xlsx` ข้อมูลถูกต้องทุกแถว → นำเข้าทันทีและขึ้น Success Popup
+   - `products-with-problems.xlsx` (นำเข้าไฟล์แรกก่อน) → แสดงสรุปปัญหาทุกชนิด: ข้อมูลหาย, ผิดชนิดข้อมูล (ราคาเป็นข้อความ), ค่าไม่ถูกต้อง (ราคา 0, status = yes, หมวดหมู่ที่ไม่มี), SKU ซ้ำในไฟล์, SKU พิมพ์เล็ก (ระบบแก้ให้), แถวว่าง และ SKU ที่ซ้ำกับในระบบ (เปรียบเทียบค่าเดิม/ค่าใหม่ แล้วเลือกเขียนทับหรือข้าม)
+   - ใช้ไฟล์ของโจทย์ (เช่น `luma_products.xlsx`) ได้เช่นกัน
+3. **จัดการสินค้า** เมนู "สินค้า": ค้นหา, เพิ่ม, แก้ไข, ลบ
+4. **QR Code** ปุ่มไอคอน QR ในแต่ละแถว (ก่อนปุ่มแก้ไข) หรือในหน้าแก้ไขสินค้า ดาวน์โหลดเป็น PNG ขนาด 1024×1024 px
+5. **หน้าสินค้าสาธารณะ** กดไอคอนลิงก์ในรายการ (หรือเปิดลิงก์ที่แสดงใต้ QR) ออกแบบสำหรับมือถือ ลองย่อหน้าต่างให้แคบเพื่อดู
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ทดสอบสแกน QR ด้วยมือถือ
 
-## Deploy on Vercel
+QR ฝังลิงก์ตามค่า `APP_URL` ใน `.env` ซึ่งตอนนี้เป็น `http://localhost:3000` ลิงก์นี้เปิดได้เฉพาะในเครื่องที่รันระบบ **มือถือสแกนแล้วจะเปิดไม่ได้** (ระบบจึงแสดงกรอบเตือนสีเหลืองในหน้าสินค้า) เลือกวิธีใดวิธีหนึ่ง:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **ไม่ใช้มือถือ:** ในหน้าแก้ไขสินค้า ใต้รูป QR มีลิงก์ที่ฝังอยู่ ก๊อปไปเปิดในเบราว์เซอร์ได้เลย (ผลเหมือนสแกน)
+- **มือถือใน Wi-Fi เดียวกับคอมพิวเตอร์:**
+  1. หา IP ของเครื่อง (macOS: `ipconfig getifaddr en0`, Windows: `ipconfig`)
+  2. แก้ `.env` เป็น `APP_URL="http://<IP ของเครื่อง>:3000"`
+  3. รัน `npm run build` แล้ว `npm run start:lan`
+  4. **ดาวน์โหลด QR ใหม่** (QR ที่ดาวน์โหลดไว้ก่อนหน้ายังชี้ไป localhost) แล้วสแกนจากหน้าจอ ถ้าเปิดไม่ได้ให้ตรวจ Firewall
+- **ผ่านอินเทอร์เน็ต:** ใช้ tunnel เช่น `npx cloudflared tunnel --url http://localhost:3000` ได้ลิงก์ `https://...` มาใส่ใน `APP_URL` แล้วดาวน์โหลด QR ใหม่
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## ฟีเจอร์ที่ทำแล้ว
+
+- Login เฉพาะผู้ดูแลระบบ (session cookie ที่ลงลายเซ็น, ตรวจสิทธิ์จาก DB ทุกครั้ง) มี 2 role คือ Super Admin และ Admin
+- CRUD สินค้า (ค้นหา, กรองสถานะ, แบ่งหน้า)
+- Import Excel: อัปโหลด → ตรวจสอบ → สรุปปัญหาพร้อมเลขแถว/คอลัมน์ → เปรียบเทียบ SKU ซ้ำกับของเดิม → ยืนยัน
+- QR Code ของสินค้าแต่ละชิ้น ดาวน์โหลดเป็น PNG
+- หน้าสินค้าสาธารณะบนมือถือ (รองรับสินค้าไม่มีรูป / หลายรูป / สินค้าที่ปิดใช้งาน)
+- ปุ่ม "ล้างสินค้าทั้งหมด" (เฉพาะ Super Admin) ยืนยัน 3 ชั้น: ติ๊กรับทราบ → พิมพ์ข้อความ → กรอกรหัสผ่าน
+
+## ที่ยังไม่ได้ทำ (บอกตรงๆ)
+
+- **อัปโหลดรูปสินค้า** ในหน้าแก้ไข (หน้าสาธารณะรองรับการแสดงรูปแล้ว แต่ยังเพิ่มรูปจากหลังบ้านไม่ได้)
+- **บันทึกการสแกน** (มีตาราง `ScanLog` แล้ว แต่ยังไม่มีโค้ดบันทึกและหน้าสถิติ)
+- **เชิญ Admin ทางอีเมล / หน้าจัดการผู้ใช้** (เมนูมีแต่เป็นหน้าเปล่า)
+- ถังขยะ (กู้สินค้าที่ลบ), ดาวน์โหลด QR เป็น ZIP, ปรับสี/ขนาด QR (ตัดออกตามที่ตกลงในแผน)
+
+## การตัดสินใจหลักที่ควรรู้
+
+- **QR ฝังแค่ลิงก์ `APP_URL/p/<productId>`** ไม่ฝังข้อมูลสินค้า และ `productId` ไม่เปลี่ยนเลยเมื่อแก้ไขสินค้า (แม้ Import เขียนทับก็ไม่เปลี่ยน) QR ที่พิมพ์ไปแล้วจึงยังใช้ได้และแสดงข้อมูลล่าสุดเสมอ QR จะใช้ไม่ได้เมื่อลบสินค้าเท่านั้น
+- **สินค้า `inactive`** ไม่แสดงบนหน้าสาธารณะ (ขึ้นข้อความแทน) และกลับมาใช้ได้เมื่อเปิดใช้งานอีกครั้ง
+- **Import เขียนทับ:** ช่องที่ว่างใน Excel ไม่ลบข้อมูลเดิม
+- **ไม่เดาข้อมูลที่กำกวม** เช่น status `yes` ถือเป็นข้อผิดพลาด ส่วนที่แก้ให้อัตโนมัติมีเฉพาะตัวพิมพ์เล็ก-ใหญ่ (SKU, หมวดหมู่, status) และสัญลักษณ์ในราคา (`฿1,290`)
+- กฎตรวจสอบข้อมูลชุดเดียว ([`lib/products/validation.ts`](lib/products/validation.ts)) ใช้ทั้งฟอร์มและ Import
+
+## คำสั่งที่ใช้บ่อย
+
+| คำสั่ง | ทำอะไร |
+|---|---|
+| `npm run dev` | รันโหมดพัฒนา |
+| `npm test` | รันเทสต์ (ตัวตรวจสอบข้อมูลและตัววิเคราะห์ไฟล์ Import) |
+| `npm run build` / `npm start` | build และรันโหมด production |
+| `npm run db:up` / `db:down` | เปิด / ปิดฐานข้อมูล (ข้อมูลยังอยู่) |
+| `npm run db:studio` | เปิดดูข้อมูลในฐานข้อมูล |
+| `npm run db:seed:samples` | เพิ่มสินค้าตัวอย่าง 5 ชิ้น (ลบด้วย `npm run db:seed:samples -- --clean`) |
+
+## แก้ปัญหาเบื้องต้น
+
+- **`Docker is not running`** เปิด Docker Desktop แล้วรัน `npm run setup` ซ้ำ
+- **พอร์ตชน** ฐานข้อมูลใช้พอร์ต 5433 (แก้ได้ที่ `POSTGRES_PORT` และ `DATABASE_URL` ใน `.env`) เว็บใช้พอร์ต 3000 (`npm run dev -- -p 3001`)
+- **ล็อกอินไม่ได้ / ลืมรหัสผ่าน** ดูค่าใน `.env` (`SEED_SUPER_ADMIN_EMAIL`, `SEED_SUPER_ADMIN_PASSWORD`) หรือเริ่มใหม่ทั้งหมดด้วย `docker compose down -v`, ลบ `.env` แล้วรัน `npm run setup`
+
+## โครงสร้างโปรเจกต์
+
+```
+app/admin/        หลังบ้าน (สินค้า, Import, ผู้ใช้) — ต้องล็อกอิน
+app/p/[productId] หน้าสินค้าสาธารณะ (เปิดจาก QR)
+app/login/        หน้าเข้าสู่ระบบ
+lib/products/     กฎตรวจสอบข้อมูล, ตัวอ่าน/วิเคราะห์ไฟล์ Excel, เทสต์
+lib/qr.ts         สร้าง QR
+prisma/           schema, migrations, seed
+sample-data/      ไฟล์ Excel สำหรับลองนำเข้า
+scripts/setup.mjs ตัวติดตั้งคำสั่งเดียว
+```

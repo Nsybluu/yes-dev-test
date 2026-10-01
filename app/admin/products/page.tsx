@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, ImageIcon, Pencil, Plus, Search } from "lucide-react";
+import { ExternalLink, ImageIcon, Pencil, Plus, QrCode, Search } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 import { requireAdmin } from "@/lib/dal";
 import { formatPrice } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
+import { getBaseUrl, isLocalBaseUrl } from "@/lib/qr";
 import { DeleteProductButton } from "@/app/admin/products/delete-product-button";
 import { ClearAllProducts } from "@/app/admin/products/clear-all-products";
 import { countClearable } from "@/lib/products/clear";
@@ -85,6 +86,13 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
         </Button>
       </div>
 
+      {isLocalBaseUrl() && (
+        <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm">
+          QR ตอนนี้ชี้ไปที่ <code>{getBaseUrl()}</code> ซึ่งใช้ได้เฉพาะเครื่องนี้ ห้ามพิมพ์ไปติดสินค้า
+          ตั้งค่า <code>APP_URL</code> เป็นโดเมนจริงก่อน
+        </p>
+      )}
+
       <div className="flex flex-wrap items-center gap-3">
         <form action="/admin/products" className="flex max-w-sm flex-1 gap-2">
           <Input name="q" defaultValue={q} placeholder="ค้นหา SKU หรือชื่อสินค้า" />
@@ -117,7 +125,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
               <TableHead>หมวดหมู่</TableHead>
               <TableHead className="text-right">ราคา</TableHead>
               <TableHead>สถานะ</TableHead>
-              <TableHead className="w-32 text-right" />
+              <TableHead className="w-40 text-right" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -157,6 +165,16 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
                       render={<Link href={`/p/${p.productId}`} target="_blank" />}
                     >
                       <ExternalLink />
+                    </Button>
+                    {/* plain <a>, not <Link>: Link would try to prefetch the PNG */}
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`ดาวน์โหลด QR ${p.sku}`}
+                      title="ดาวน์โหลด QR"
+                      render={<a href={`/admin/products/${p.productId}/qr?download=1`} download />}
+                    >
+                      <QrCode />
                     </Button>
                     <Button
                       variant="ghost"
