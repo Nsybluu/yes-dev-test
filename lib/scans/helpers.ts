@@ -14,11 +14,18 @@ export type ScanSkipReason = "bot" | "prefetch" | "preview";
 
 type HeaderLike = { get(name: string): string | null };
 
-// null = count it. The admin "view public page" buttons add ?preview=1 so an
-// admin checking a product doesn't inflate its numbers.
-export function scanSkipReason(headers: HeaderLike, preview: string | string[] | undefined): ScanSkipReason | null {
-  const purpose = `${headers.get("sec-purpose") ?? ""} ${headers.get("purpose") ?? ""}`;
-  if (/prefetch|prerender/i.test(purpose) || headers.get("next-router-prefetch")) return "prefetch";
+// null = count it. A scan is someone opening the product link or scanning its QR.
+// Skipped:
+//  - bots and link-preview fetchers
+//  - Next.js's own <Link> prefetch, when the header reaches us (the public page's links
+//    are also prefetch={false}, so none is expected; the click is a separate, counted request)
+//  - the back office "preview" button, which opens the page with ?preview=1: an admin
+//    checking a product is neither a customer opening the link nor a QR scan
+// Browser-level prefetch/prerender (Sec-Purpose) is deliberately NOT skipped: Chrome reuses
+// that response when the person really opens the page and never asks the server again,
+// so skipping it would lose real visits.
+export function scanSkipReason(headers: HeaderLike, preview?: string | string[]): ScanSkipReason | null {
+  if (headers.get("next-router-prefetch")) return "prefetch";
   if (looksLikeBot(headers.get("user-agent"))) return "bot";
   if ((Array.isArray(preview) ? preview[0] : preview) === "1") return "preview";
   return null;

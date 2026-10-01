@@ -24,17 +24,26 @@ test("real browsers count; crawlers, link previews and empty user agents do not"
 });
 
 test("a normal visit is counted", () => {
+  assert.equal(scanSkipReason(headers({ "user-agent": iphone })), null);
+  assert.equal(scanSkipReason(headers({ "user-agent": desktop })), null);
+});
+
+test("only bots and Next.js router prefetches are skipped", () => {
+  assert.equal(scanSkipReason(headers({ "user-agent": iphone, "next-router-prefetch": "1" })), "prefetch");
+  assert.equal(scanSkipReason(headers({ "user-agent": "Googlebot/2.1" })), "bot");
+  assert.equal(scanSkipReason(headers({})), "bot"); // no user agent at all
+});
+
+test("the back office preview button (?preview=1) is not a scan; other values are", () => {
+  assert.equal(scanSkipReason(headers({ "user-agent": iphone }), "1"), "preview");
+  assert.equal(scanSkipReason(headers({ "user-agent": iphone }), ["1"]), "preview");
+  assert.equal(scanSkipReason(headers({ "user-agent": iphone }), "0"), null);
   assert.equal(scanSkipReason(headers({ "user-agent": iphone }), undefined), null);
 });
 
-test("prefetch requests, bots and admin previews are skipped, each for its own reason", () => {
-  assert.equal(scanSkipReason(headers({ "user-agent": iphone, "sec-purpose": "prefetch" }), undefined), "prefetch");
-  assert.equal(scanSkipReason(headers({ "user-agent": iphone, "next-router-prefetch": "1" }), undefined), "prefetch");
-  assert.equal(scanSkipReason(headers({ "user-agent": "Googlebot/2.1" }), undefined), "bot");
-  assert.equal(scanSkipReason(headers({ "user-agent": iphone }), "1"), "preview");
-  assert.equal(scanSkipReason(headers({ "user-agent": iphone }), ["1"]), "preview");
-  // other values of ?preview are not a way to skip counting
-  assert.equal(scanSkipReason(headers({ "user-agent": iphone }), "0"), null);
+test("browser prefetch/prerender is still counted: the browser reuses it instead of asking again", () => {
+  assert.equal(scanSkipReason(headers({ "user-agent": desktop, "sec-purpose": "prefetch;prerender" })), null);
+  assert.equal(scanSkipReason(headers({ "user-agent": desktop, purpose: "prefetch" })), null);
 });
 
 test("device label", () => {

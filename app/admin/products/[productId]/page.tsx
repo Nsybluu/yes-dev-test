@@ -26,10 +26,11 @@ export default async function EditProductPage({ params }: PageProps<"/admin/prod
         <Button
           variant="outline"
           size="sm"
+          title="ดูตัวอย่างหน้าสาธารณะ (ไม่นับเป็นการเข้าดู)"
           render={<Link href={`/p/${product.productId}?preview=1`} target="_blank" />}
         >
           <ExternalLink />
-          ดูหน้าสาธารณะ
+          ดูตัวอย่างหน้าสาธารณะ
         </Button>
       </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,42rem)_16rem]">

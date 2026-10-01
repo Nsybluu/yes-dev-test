@@ -44,11 +44,6 @@ const mainNav: NavItem[] = [
   { title: "สถิติการสแกน", href: "/admin/scans", icon: BarChart3 },
 ];
 
-// Super Admin only
-const superAdminNav: NavItem[] = [
-  { title: "จัดการผู้ใช้", href: "/admin/users", icon: Users },
-];
-
 function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
   const pathname = usePathname();
 
@@ -104,7 +99,11 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
 
       <SidebarContent>
         <NavGroup label="เมนูหลัก" items={mainNav} />
-        {user.isSuperAdmin && <NavGroup label="ผู้ดูแลระบบ" items={superAdminNav} />}
+        {/* everyone sees the page; what they can do on it depends on the role */}
+        <NavGroup
+          label="ผู้ดูแลระบบ"
+          items={[{ title: user.isSuperAdmin ? "จัดการผู้ใช้" : "ผู้ใช้", href: "/admin/users", icon: Users }]}
+        />
       </SidebarContent>
 
       <SidebarFooter>

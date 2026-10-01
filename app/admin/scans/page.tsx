@@ -38,7 +38,7 @@ export default async function ScansPage({ searchParams }: PageProps<"/admin/scan
     <>
       <PageHeader
         title="สถิติการสแกน"
-        description="บันทึกทุกครั้งที่มีคนเปิดหน้าสินค้าจาก QR (ไม่นับบอต และไม่นับปุ่ม “ดูหน้าสาธารณะ” ในหลังบ้าน)"
+        description="นับเฉพาะการเปิดลิงก์สินค้าและการสแกน QR (ไม่นับบอต และไม่นับปุ่ม “ดูตัวอย่าง” ในหลังบ้าน)"
       />
 
       <div className="flex flex-wrap gap-1">

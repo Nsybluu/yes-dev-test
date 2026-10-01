@@ -85,16 +85,13 @@ function HowToUse({ text }: { text: string }) {
   );
 }
 
-export default async function ProductPage({
-  params,
-  searchParams,
-}: PageProps<"/p/[productId]">) {
+export default async function ProductPage({ params, searchParams }: PageProps<"/p/[productId]">) {
   const { productId } = await params;
   const product = await getProduct(productId);
   if (!product) notFound();
 
-  // Every real visit is a scan: the QR code is just this URL. Bots, prefetches and
-  // the admin's own "view public page" previews (?preview=1) are not counted.
+  // Opening this URL (the link, or the QR code that contains it) is a scan. Bots,
+  // Next.js prefetches and the back office preview button are not (lib/scans/helpers.ts).
   const requestHeaders = await headers();
   const skip = scanSkipReason(requestHeaders, (await searchParams).preview);
   if (!skip) {
@@ -173,8 +170,11 @@ export default async function ProductPage({
           <ul className="grid gap-3 sm:grid-cols-3">
             {popular.map((p) => (
               <li key={p.productId}>
+                {/* prefetch off: a prefetched product page would be loaded (and could be counted)
+                    even if the visitor never clicks it */}
                 <Link
                   href={`/p/${p.productId}`}
+                  prefetch={false}
                   className="bg-background group flex items-center gap-3 rounded-2xl p-3 shadow-sm ring-1 ring-black/5 transition hover:shadow-md sm:flex-col sm:items-stretch"
                 >
                   <div className="from-brand-soft to-muted text-brand relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br sm:aspect-square sm:size-auto">

@@ -8,18 +8,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { requireSuperAdmin } from "@/lib/dal";
+import { requireAdmin } from "@/lib/dal";
 import { formatDateTime } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { InviteForm } from "@/app/admin/users/invite-form";
-import { PendingActions } from "@/app/admin/users/pending-actions";
+import { UserRowActions } from "@/app/admin/users/user-actions";
 
 function isExpired(expiresAt: Date | null) {
   return !!expiresAt && expiresAt.getTime() < Date.now();
 }
 
 export default async function UsersPage() {
-  const me = await requireSuperAdmin();
+  const me = await requireAdmin();
+  const isSuper = me.adminRole === "SUPER_ADMIN";
   const admins = await prisma.admin.findMany({
     orderBy: [{ adminRole: "asc" }, { createdAt: "asc" }],
     select: {
@@ -28,22 +29,29 @@ export default async function UsersPage() {
       email: true,
       adminRole: true,
       status: true,
-      createdAt: true,
       inviteExpiresAt: true,
     },
   });
+  const viewer = { adminId: me.adminId, role: me.adminRole };
 
   return (
     <>
-      <PageHeader title="จัดการผู้ใช้" description="เชิญผู้ดูแลระบบใหม่ทางอีเมล (เฉพาะ Super Admin)" />
-      <InviteForm />
+      <PageHeader
+        title={isSuper ? "จัดการผู้ใช้" : "ผู้ใช้"}
+        description={
+          isSuper
+            ? "เชิญ แก้ไข และลบผู้ดูแลระบบ (เฉพาะ Super Admin)"
+            : "คุณแก้ไขได้เฉพาะชื่อของตัวเอง ส่วนการเชิญ แก้ไขผู้อื่น และลบ ทำได้เฉพาะ Super Admin"
+        }
+      />
+      {isSuper && <InviteForm />}
 
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>ชื่อ</TableHead>
-              <TableHead>อีเมล</TableHead>
+              {isSuper && <TableHead>อีเมล</TableHead>}
               <TableHead>บทบาท</TableHead>
               <TableHead>สถานะ</TableHead>
               <TableHead className="text-right" />
@@ -58,7 +66,7 @@ export default async function UsersPage() {
                     {a.adminName}
                     {a.adminId === me.adminId && <span className="text-muted-foreground ml-2 text-xs">(คุณ)</span>}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{a.email}</TableCell>
+                  {isSuper && <TableCell className="text-muted-foreground">{a.email}</TableCell>}
                   <TableCell>
                     <Badge variant={a.adminRole === "SUPER_ADMIN" ? "default" : "secondary"}>
                       {a.adminRole === "SUPER_ADMIN" ? "Super Admin" : "Admin"}
@@ -70,14 +78,24 @@ export default async function UsersPage() {
                     ) : (
                       <div className="grid gap-0.5">
                         <Badge variant="outline">{expired ? "คำเชิญหมดอายุ" : "รอยืนยัน"}</Badge>
-                        {a.inviteExpiresAt && !expired && (
+                        {isSuper && a.inviteExpiresAt && !expired && (
                           <span className="text-muted-foreground text-xs">หมดอายุ {formatDateTime(a.inviteExpiresAt)}</span>
                         )}
                       </div>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    {a.status === "INVITED" && <PendingActions adminId={a.adminId} name={a.adminName} />}
+                    <UserRowActions
+                      viewer={viewer}
+                      user={{
+                        adminId: a.adminId,
+                        name: a.adminName,
+                        // an Admin never receives other people's emails; the row's own email isn't needed to rename
+                        email: isSuper || a.adminId === me.adminId ? a.email : "",
+                        role: a.adminRole,
+                        status: a.status,
+                      }}
+                    />
                   </TableCell>
                 </TableRow>
               );

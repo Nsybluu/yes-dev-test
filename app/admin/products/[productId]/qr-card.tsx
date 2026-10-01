@@ -12,7 +12,19 @@ export function QrCard({ productId, sku }: { productId: string; sku: string }) {
         {/* the route already returns a finished PNG, so skip Next's image optimizer */}
         <Image src={src} alt={`QR Code ของ ${sku}`} width={224} height={224} unoptimized loading="eager" className="size-full" />
       </div>
-      <p className="text-muted-foreground text-xs break-all">{productUrl(productId)}</p>
+      <div className="grid gap-1">
+        <a
+          href={productUrl(productId)}
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs break-all underline underline-offset-2"
+        >
+          {productUrl(productId)}
+        </a>
+        <p className="text-muted-foreground text-xs">
+          ลิงก์ที่ฝังใน QR กดเปิดแล้วนับเป็นการเข้าดู เหมือนสแกน QR
+        </p>
+      </div>
       <Button render={<a href={`${src}?download=1`} download />}>
         <Download />
         ดาวน์โหลด QR (PNG)
