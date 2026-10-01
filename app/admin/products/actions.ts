@@ -1,9 +1,11 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/dal";
+import { getCurrentAdmin, requireAdmin } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
+import { CLEAR_PHRASE, deleteAllProducts } from "@/lib/products/clear";
 import {
   validateProduct,
   type FieldKey,
@@ -100,6 +102,33 @@ export async function updateProduct(
 
   revalidatePath("/admin/products");
   redirect("/admin/products?saved=updated");
+}
+
+export type ClearResult =
+  | { ok: true; deleted: number }
+  | { ok: false; error: string };
+
+// Wipes every product. Every safeguard is enforced here, not just in the dialog:
+// Super Admin only, the exact confirmation phrase, and the admin's own password.
+export async function clearAllProducts(phrase: string, password: string): Promise<ClearResult> {
+  const admin = await getCurrentAdmin();
+  if (!admin || admin.adminRole !== "SUPER_ADMIN") {
+    return { ok: false, error: "เฉพาะ Super Admin เท่านั้นที่ล้างสินค้าทั้งหมดได้" };
+  }
+  if (phrase.trim() !== CLEAR_PHRASE) {
+    return { ok: false, error: "ข้อความยืนยันไม่ตรง" };
+  }
+
+  const account = await prisma.admin.findUnique({
+    where: { adminId: admin.adminId },
+    select: { passwordHash: true },
+  });
+  const valid = !!account?.passwordHash && (await bcrypt.compare(password, account.passwordHash));
+  if (!valid) return { ok: false, error: "รหัสผ่านไม่ถูกต้อง" };
+
+  const result = await deleteAllProducts(prisma);
+  revalidatePath("/admin/products");
+  return { ok: true, deleted: result.products };
 }
 
 export async function deleteProduct(productId: string) {

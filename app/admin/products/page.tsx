@@ -17,6 +17,8 @@ import { requireAdmin } from "@/lib/dal";
 import { formatPrice } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { DeleteProductButton } from "@/app/admin/products/delete-product-button";
+import { ClearAllProducts } from "@/app/admin/products/clear-all-products";
+import { countClearable } from "@/lib/products/clear";
 import { SavedToast } from "@/app/admin/products/saved-toast";
 import type { Prisma } from "@/app/generated/prisma/client";
 
@@ -38,7 +40,8 @@ function href(params: { q?: string; status?: string; page?: number }) {
 }
 
 export default async function ProductsPage({ searchParams }: PageProps<"/admin/products">) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const canClear = admin.adminRole === "SUPER_ADMIN";
   const sp = await searchParams;
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
@@ -68,6 +71,8 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
     }),
   ]);
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  // counts for the whole catalogue (not the filtered list), shown in the clear-all warning
+  const clearCounts = canClear ? await countClearable(prisma) : null;
 
   return (
     <>
@@ -195,6 +200,8 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
           </div>
         </div>
       )}
+
+      {clearCounts && <ClearAllProducts counts={clearCounts} />}
     </>
   );
 }
