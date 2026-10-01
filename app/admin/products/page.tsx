@@ -162,7 +162,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
                       variant="ghost"
                       size="icon-sm"
                       aria-label={`ดูหน้าสาธารณะ ${p.sku}`}
-                      render={<Link href={`/p/${p.productId}`} target="_blank" />}
+                      render={<Link href={`/p/${p.productId}?preview=1`} target="_blank" />}
                     >
                       <ExternalLink />
                     </Button>

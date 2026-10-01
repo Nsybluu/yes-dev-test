@@ -16,7 +16,7 @@
     "db:studio": "prisma studio",
     "postinstall": "prisma generate && next typegen",
     "db:seed:samples": "tsx prisma/seed-samples.ts",
-    "test": "node --import tsx --test lib/products/*.test.ts lib/images/*.test.ts"
+    "test": "node --import tsx --test lib/*/*.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

@@ -26,7 +26,7 @@ export default async function EditProductPage({ params }: PageProps<"/admin/prod
         <Button
           variant="outline"
           size="sm"
-          render={<Link href={`/p/${product.productId}`} target="_blank" />}
+          render={<Link href={`/p/${product.productId}?preview=1`} target="_blank" />}
         >
           <ExternalLink />
           ดูหน้าสาธารณะ

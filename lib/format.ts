@@ -7,3 +7,12 @@ export function formatPrice(price: { toNumber(): number } | number) {
     minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
   }).format(value);
 }
+
+// Dates are shown in Thai time regardless of where the server runs
+export function formatDateTime(date: Date) {
+  return new Intl.DateTimeFormat("th-TH", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Bangkok",
+  }).format(date);
+}
