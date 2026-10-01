@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CLEAR_PHRASE, type ClearCounts } from "@/lib/products/clear";
+import { CLEAR_PHRASE, type ClearCounts } from "@/lib/products/clear-phrase";
 import { clearAllProducts } from "@/app/admin/products/actions";
 
 type Step = 1 | 2 | 3;

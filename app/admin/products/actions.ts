@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentAdmin, requireAdmin } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
-import { CLEAR_PHRASE, deleteAllProducts } from "@/lib/products/clear";
+import { CLEAR_PHRASE } from "@/lib/products/clear-phrase";
+import { deleteAllProducts } from "@/lib/products/clear";
+import { deleteMediaFiles } from "@/lib/storage";
 import {
   validateProduct,
   type FieldKey,
@@ -133,7 +135,10 @@ export async function clearAllProducts(phrase: string, password: string): Promis
 
 export async function deleteProduct(productId: string) {
   await requireAdmin();
+  const images = await prisma.productImage.findMany({ where: { productId }, select: { imagePath: true } });
   // deleteMany: no error if it was already deleted by someone else
   await prisma.product.deleteMany({ where: { productId } });
+  // rows first, then files: a failed file delete leaves an orphan file, never a broken image row
+  await deleteMediaFiles(images.map((i) => i.imagePath));
   revalidatePath("/admin/products");
 }

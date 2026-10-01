@@ -69,3 +69,6 @@ skills-lock.json
 .vscode/
 *.swp
 Thumbs.db
+
+# uploaded product images (served through app/media)
+/storage
