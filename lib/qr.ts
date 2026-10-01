@@ -1,18 +1,18 @@
 import QRCode from "qrcode";
+import { parseBaseUrl } from "@/lib/url/base-url";
 
 // QR codes only carry this URL, never product data, so editing a product never
 // changes its QR. What must stay stable is APP_URL and the product's productId.
+export function getBaseUrlInfo() {
+  return parseBaseUrl(process.env.APP_URL);
+}
+
 export function getBaseUrl() {
-  return (process.env.APP_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+  return getBaseUrlInfo().url;
 }
 
 export function productUrl(productId: string) {
   return `${getBaseUrl()}/p/${productId}`;
-}
-
-/** true when the QR would point at a machine nobody else can reach */
-export function isLocalBaseUrl() {
-  return /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(getBaseUrl());
 }
 
 // 1024px (above the 800px minimum), medium error correction, standard 4-module quiet zone
