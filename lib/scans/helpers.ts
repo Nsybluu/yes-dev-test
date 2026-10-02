@@ -1,3 +1,5 @@
+import { DEVICE_LABELS, parseUserAgent } from "@/lib/scans/devices";
+
 // Decides which visits to the public product page count as a "scan", and turns
 // stored user agents into something readable. Pure functions, easy to test.
 
@@ -31,9 +33,11 @@ export function scanSkipReason(headers: HeaderLike, preview?: string | string[])
   return null;
 }
 
+// "มือถือ · iOS" for the recent-scans table; the dashboard charts use lib/scans/devices.ts
 export function deviceFromUserAgent(userAgent: string | null | undefined) {
-  if (!userAgent) return "ไม่ทราบ";
-  return /Mobi|Android|iPhone|iPad|iPod/i.test(userAgent) ? "มือถือ/แท็บเล็ต" : "คอมพิวเตอร์";
+  const { type, os } = parseUserAgent(userAgent);
+  if (type === "unknown") return DEVICE_LABELS.unknown;
+  return os === "other" || os === "unknown" ? DEVICE_LABELS[type] : `${DEVICE_LABELS[type]} · ${os}`;
 }
 
 export const MAX_USER_AGENT_LENGTH = 300;

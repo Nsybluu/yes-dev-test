@@ -33,7 +33,7 @@ export default async function EditProductPage({ params }: PageProps<"/admin/prod
           ดูตัวอย่างหน้าสาธารณะ
         </Button>
       </div>
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,42rem)_16rem]">
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,42rem)_18rem]">
         <div className="grid gap-8">
           <ImageManager productId={product.productId} images={product.images} />
           <ProductForm

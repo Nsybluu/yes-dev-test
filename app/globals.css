@@ -136,4 +136,18 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind 4 resets buttons to the plain arrow. Show the hand on everything that can be
+     clicked, but not on disabled controls. Utilities such as cursor-not-allowed or
+     cursor-w-resize still win over this, because base styles have the lowest priority. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"], [data-disabled]),
+  [role="tab"]:not([aria-disabled="true"], [data-disabled]),
+  [role="combobox"]:not([aria-disabled="true"], [data-disabled]),
+  [role="menuitem"]:not([aria-disabled="true"], [data-disabled]),
+  [role="option"]:not([aria-disabled="true"], [data-disabled]),
+  summary,
+  select:not(:disabled),
+  input:is([type="checkbox"], [type="radio"], [type="file"], [type="color"], [type="submit"]):not(:disabled) {
+    cursor: pointer;
+  }
 }

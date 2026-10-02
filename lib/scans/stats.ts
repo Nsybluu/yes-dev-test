@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { summarizeDevices, type DeviceSummary } from "@/lib/scans/devices";
 import { MAX_USER_AGENT_LENGTH, rangeStart, type ScanRange } from "@/lib/scans/helpers";
 import type { Prisma } from "@/app/generated/prisma/client";
 
@@ -114,4 +115,15 @@ export async function getPopularActiveProducts(excludeProductId: string, limit: 
   });
   const byId = new Map(active.map((p) => [p.productId, p]));
   return groups.flatMap((g) => byId.get(g.productId) ?? []).slice(0, limit);
+}
+
+// Scans per device kind and operating system. The database only counts scans per distinct
+// User-Agent string; the strings are classified here (lib/scans/devices.ts).
+export async function getDeviceBreakdown(range: ScanRange): Promise<DeviceSummary> {
+  const groups = await prisma.scanLog.groupBy({
+    by: ["userAgent"],
+    where: whereFor(range),
+    _count: { _all: true },
+  });
+  return summarizeDevices(groups.map((g) => ({ userAgent: g.userAgent, count: g._count._all })));
 }

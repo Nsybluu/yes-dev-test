@@ -21,7 +21,7 @@ async function superAdmin() {
 const FORBIDDEN = { ok: false as const, error: "เฉพาะ Super Admin เท่านั้นที่จัดการผู้ใช้ได้" };
 
 // Creates a fresh single-use token, logs the invitation "email", and returns the link
-// for the back office to show (only when SHOW_INVITE_LINK allows it)
+// for the back office to show (unless SHOW_INVITE_LINK="false")
 async function issueInvite(adminId: string, name: string, email: string, invitedBy: string) {
   const { token, hash, expiresAt } = createInviteToken();
   await prisma.admin.update({

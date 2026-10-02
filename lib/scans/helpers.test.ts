@@ -47,8 +47,8 @@ test("browser prefetch/prerender is still counted: the browser reuses it instead
 });
 
 test("device label", () => {
-  assert.equal(deviceFromUserAgent(iphone), "มือถือ/แท็บเล็ต");
-  assert.equal(deviceFromUserAgent(desktop), "คอมพิวเตอร์");
+  assert.equal(deviceFromUserAgent(iphone), "มือถือ · iOS");
+  assert.equal(deviceFromUserAgent(desktop), "คอมพิวเตอร์ · macOS");
   assert.equal(deviceFromUserAgent(null), "ไม่ทราบ");
 });
 

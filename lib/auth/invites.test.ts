@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createInviteToken, hashInviteToken, isValidEmail, validatePassword } from "./invites";
+import { createInviteToken, hashInviteToken, isValidEmail, showInviteLink, validatePassword } from "./invites";
 
 test("tokens are unguessable, unique and only their hash is derivable", () => {
   const a = createInviteToken();
@@ -25,4 +25,23 @@ test("password rules", () => {
 test("email check", () => {
   assert.equal(isValidEmail("a@b.co"), true);
   for (const bad of ["", "a", "a@b", "a b@c.com", "@b.com"]) assert.equal(isValidEmail(bad), false, bad);
+});
+
+test("the invite link is shown unless SHOW_INVITE_LINK is explicitly false (in any NODE_ENV)", () => {
+  const saved = { flag: process.env.SHOW_INVITE_LINK, env: process.env.NODE_ENV };
+  try {
+    for (const nodeEnv of ["development", "production"]) {
+      (process.env as Record<string, string | undefined>).NODE_ENV = nodeEnv;
+      delete process.env.SHOW_INVITE_LINK;
+      assert.equal(showInviteLink(), true, `unset in ${nodeEnv}`); // the case that hid it for a production run
+      process.env.SHOW_INVITE_LINK = "true";
+      assert.equal(showInviteLink(), true);
+      process.env.SHOW_INVITE_LINK = " False ";
+      assert.equal(showInviteLink(), false);
+    }
+  } finally {
+    if (saved.flag === undefined) delete process.env.SHOW_INVITE_LINK;
+    else process.env.SHOW_INVITE_LINK = saved.flag;
+    (process.env as Record<string, string | undefined>).NODE_ENV = saved.env;
+  }
 });

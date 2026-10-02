@@ -47,7 +47,10 @@ export function InviteResult({ email, link, resent }: { email: string; link: str
           <CopyLinkButton link={link} />
         </div>
       ) : (
-        <p className="text-muted-foreground">ลิงก์ถูกซ่อนในหน้านี้ (SHOW_INVITE_LINK=false) ดูได้จาก log ของเซิร์ฟเวอร์</p>
+        <p className="text-muted-foreground">
+          ลิงก์ถูกซ่อนเพราะ .env ตั้ง SHOW_INVITE_LINK=&quot;false&quot; ดูลิงก์ได้จาก log ของเซิร์ฟเวอร์ (หรือแก้เป็น &quot;true&quot;
+          แล้วเริ่มเซิร์ฟเวอร์ใหม่เพื่อให้แสดงลิงก์ในหน้านี้)
+        </p>
       )}
     </div>
   );

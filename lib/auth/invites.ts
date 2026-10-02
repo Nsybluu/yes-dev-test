@@ -12,11 +12,13 @@ export function hashInviteToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-// Showing the invite link in the back office is a dev/demo convenience. In production
-// the link should only reach the invitee by email, so it defaults to off there.
+// The invite link is shown to the Super Admin in the back office. This project does not
+// really deliver email (lib/email.ts only writes it to the server log), so without the
+// link on screen an invitation could only be read out of the log, in any mode.
+// Once real email sending is wired up, set SHOW_INVITE_LINK="false" so that the link
+// travels by email only. Only an explicit "false" hides it.
 export function showInviteLink() {
-  const flag = process.env.SHOW_INVITE_LINK;
-  return flag ? flag === "true" : process.env.NODE_ENV !== "production";
+  return (process.env.SHOW_INVITE_LINK ?? "").trim().toLowerCase() !== "false";
 }
 
 export const MIN_PASSWORD_LENGTH = 8;
